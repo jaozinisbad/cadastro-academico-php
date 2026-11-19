@@ -12,13 +12,49 @@ function escapar($valor) {
     return htmlspecialchars((string) $valor, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 }
 
-// Lê um campo obrigatório do formulário.
-function lerCampo($nome) {
+const ESTADOS = ['AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS', 'MG', 'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'];
+const TURNOS = ['Matutino', 'Vespertino', 'Noturno', 'Integral'];
+
+// O limite também é conferido no PHP, contando letras com acento corretamente.
+function lerCampo($nome, $limite = 1000) {
     $valor = $_POST[$nome] ?? '';
-    if (!is_string($valor) || trim($valor) === '' || strlen($valor) > 1000) {
+    if (!is_string($valor) || trim($valor) === '') {
         throw new Exception('Preencha todos os campos corretamente.');
     }
-    return trim($valor);
+    $valor = trim($valor);
+    $quantidade = preg_match_all('/./us', $valor);
+    if ($quantidade === false || $quantidade > $limite) {
+        $rotulo = ucfirst(str_replace('_', ' ', $nome));
+        throw new Exception("$rotulo: máximo de $limite caracteres.");
+    }
+    return $valor;
+}
+
+function lerCep() {
+    $cep = lerCampo('cep', 9);
+    if (!preg_match('/^[0-9]{5}-?[0-9]{3}$/', $cep)) {
+        throw new Exception('O CEP deve conter exatamente 8 números.');
+    }
+    return str_replace('-', '', $cep);
+}
+
+function lerTelefone() {
+    $telefone = lerCampo('telefone', 15);
+    if (!preg_match('/^[0-9() -]+$/', $telefone)) {
+        throw new Exception('Informe um telefone com DDD, usando 10 ou 11 números.');
+    }
+    $numeros = preg_replace('/[() -]/', '', $telefone);
+    if (!preg_match('/^[0-9]{10,11}$/', $numeros)) {
+        throw new Exception('O telefone deve conter DDD e 10 ou 11 números.');
+    }
+    return $numeros;
+}
+
+function validarOpcao($valor, $opcoes, $rotulo) {
+    if (!in_array($valor, $opcoes, true)) {
+        throw new Exception("Selecione um valor válido para $rotulo.");
+    }
+    return $valor;
 }
 
 function verificarFormulario() {

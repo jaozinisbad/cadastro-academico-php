@@ -2,21 +2,23 @@
 require 'funcoes.php';
 require 'conexao.php';
 $erro = '';
+$limites = ['nome'=>100, 'codigo'=>20, 'descricao'=>500, 'carga_horaria'=>5, 'turno'=>10];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
         verificarFormulario();
-        $carga = lerCampo('carga_horaria');
+        $carga = lerCampo('carga_horaria', $limites['carga_horaria']);
         if (!ctype_digit($carga) || (int) $carga < 1 || (int) $carga > 20000) {
             throw new Exception('A carga horária deve ser um inteiro de 1 a 20000.');
         }
+        $codigo = strtoupper(lerCampo('codigo', $limites['codigo']));
         // Curso com cinco campos.
         $cursos->insertOne([
-            'nome' => lerCampo('nome'),
-            'codigo' => strtoupper(lerCampo('codigo')),
-            'descricao' => lerCampo('descricao'),
+            'nome' => lerCampo('nome', $limites['nome']),
+            'codigo' => $codigo,
+            'descricao' => lerCampo('descricao', $limites['descricao']),
             'carga_horaria' => (int) $carga,
-            'turno' => lerCampo('turno'),
+            'turno' => validarOpcao(lerCampo('turno', $limites['turno']), TURNOS, 'Turno'),
         ]);
         header('Location: cursos.php', true, 303);
         exit;
@@ -37,7 +39,16 @@ require 'cabecalho.php';
     foreach ($campos as $campo => $rotulo): ?>
         <div class="campo">
             <label for="<?= $campo ?>" ><?= $rotulo ?></label>
-            <input id="<?= $campo ?>" name="<?= $campo ?>" type="<?= $campo === 'carga_horaria' ? 'number' : 'text' ?>" <?= $campo === 'carga_horaria' ? 'min="1" max="20000" step="1"' : '' ?>  value="<?= escapar(is_string($_POST[$campo] ?? null) ? $_POST[$campo] : '') ?>" maxlength="150" required>
+            <?php if ($campo === 'turno'): ?>
+                <select id="turno" name="turno" required>
+                    <option value="">Selecione o turno</option>
+                    <?php foreach (TURNOS as $turno): ?>
+                        <option value="<?= $turno ?>" <?= ($_POST['turno'] ?? '') === $turno ? 'selected' : '' ?>><?= $turno ?></option>
+                    <?php endforeach; ?>
+                </select>
+            <?php else: ?>
+                <input id="<?= $campo ?>" name="<?= $campo ?>" type="text" <?= $campo === 'carga_horaria' ? 'inputmode="numeric" pattern="[0-9]{1,5}" title="Informe um inteiro de 1 a 20000 horas."' : '' ?> value="<?= escapar(is_string($_POST[$campo] ?? null) ? $_POST[$campo] : '') ?>" maxlength="<?= $limites[$campo] ?>" required>
+            <?php endif; ?>
         </div>
     <?php endforeach; ?>
     </div>
