@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#12002b">
     <title>Cadastro acadêmico</title>
     <!-- Todas as cores, fontes e espaçamentos ficam neste arquivo. -->
     <link href="estilo.css" rel="stylesheet">
