@@ -1,0 +1,11 @@
+{
+    "name": "trabalho/cadastro-simples",
+    "description": "Trabalho simples de PHP e MongoDB",
+    "type": "project",
+    "license": "proprietary",
+    "require": {
+        "php": "^8.2",
+        "ext-mongodb": "^2.5",
+        "mongodb/mongodb": "^2.5"
+    }
+}
